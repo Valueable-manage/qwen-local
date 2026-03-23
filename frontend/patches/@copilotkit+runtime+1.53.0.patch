@@ -1,0 +1,24 @@
+diff --git a/node_modules/@copilotkit/runtime/dist/service-adapters/openai/openai-adapter.mjs b/node_modules/@copilotkit/runtime/dist/service-adapters/openai/openai-adapter.mjs
+index ffeb5e8..e3f5688 100644
+--- a/node_modules/@copilotkit/runtime/dist/service-adapters/openai/openai-adapter.mjs
++++ b/node_modules/@copilotkit/runtime/dist/service-adapters/openai/openai-adapter.mjs
+@@ -28,14 +28,17 @@ var OpenAIAdapter = class {
+ 	getLanguageModel() {
+ 		const openai = this.ensureOpenAI();
+ 		const options = getSdkClientOptions(openai);
+-		return createOpenAI({
++		const provider = createOpenAI({
+ 			baseURL: openai.baseURL,
+ 			apiKey: openai.apiKey,
+ 			organization: openai.organization ?? void 0,
+ 			project: openai.project ?? void 0,
+ 			headers: options.defaultHeaders,
+ 			fetch: options.fetch
+-		})(this.model);
++		});
++		// 强制使用 Chat Completions API，避免调用不存在的 /v1/responses
++		// 参考: https://github.com/CopilotKit/CopilotKit/pull/3327
++		return provider.chat(this.model);
+ 	}
+ 	ensureOpenAI() {
+ 		if (!this._openai) this._openai = new Openai();
